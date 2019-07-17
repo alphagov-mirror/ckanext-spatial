@@ -670,11 +670,13 @@ class SpatialHarvester(HarvesterBase):
         Uses owslib WMS reader to parse the response.
         '''
         try:
-            capabilities_url = wms.WMSCapabilitiesReader().capabilities_url(url)
+            xml = self._get_content_as_unicode(url)
+            xml = xml.encode('ascii','ignore')
 
-            # as WebMapService rejects unicode use urllib2 in _get_content
-            xml = self._get_content(capabilities_url)
-            s = wms.WebMapService(url, xml=xml)
+            print('***** xml', xml)
+
+            s = wms.WebMapService(url)
+            print('**** wms service')
             return isinstance(s.contents, dict) and s.contents != {}
         except Exception, e:
             log.error('WMS check for %s failed with exception: %s' % (url, str(e)))
