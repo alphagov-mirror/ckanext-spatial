@@ -305,11 +305,19 @@ class GeminiHarvester(SpatialHarvester):
                         # Check if the service is a view service
                         test_url = url
                         print('**** test_url', test_url)
-                        if self._is_wms(test_url):
-                            print('**** verified')
-                            resource['verified'] = True
+
+                        if extras['resource-type'] == 'service':
+                            resource['verified'] = self._is_wms(test_url)
+                            if resource['verified']:
+                                resource_format = 'WMS'
+                        elif extras['resource-type'] == 'dataset':
+                            resource['verified'] = self._is_wfs(test_url)
+                            if resource['verified']:
+                                resource_format = 'WFS'
+
+                        if resource['verified']:
                             resource['verified_date'] = datetime.now().isoformat()
-                            resource_format = 'WMS'
+                            
                     resource.update(
                         {
                             'url': url,
@@ -579,7 +587,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
         try:
             for identifier in self.csw.getidentifiers(page=10):
                 # debug to limit gather
-                # if identifier != '264a4e38-4996-4709-920b-ed585bea5d47':
+                # if identifier != '00254647-9610-4838-98ab-08811eff0530':
                 #     continue
 
                 try:

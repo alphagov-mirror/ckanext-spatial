@@ -15,7 +15,7 @@ import mimetypes
 
 
 from pylons import config
-from owslib import wms
+from owslib import wms, wfs
 import requests
 from lxml import etree
 
@@ -667,20 +667,28 @@ class SpatialHarvester(HarvesterBase):
     def _is_wms(self, url):
         '''
         Checks if the provided URL actually points to a Web Map Service.
-        Uses owslib WMS reader to parse the response.
         '''
         try:
-            xml = self._get_content_as_unicode(url)
-            xml = xml.encode('ascii','ignore')
-
-            print('***** xml', xml)
-
             s = wms.WebMapService(url)
             print('**** wms service')
             return isinstance(s.contents, dict) and s.contents != {}
         except Exception, e:
             log.error('WMS check for %s failed with exception: %s' % (url, str(e)))
         return False
+
+    
+    def _is_wfs(self, url):
+        '''
+        Checks if the provided URL is a Web Feature Service.
+        '''
+        try:
+            s = wfs.WebFeatureService(url)
+            print('**** wfs service')
+            return isinstance(s.contents, dict) and s.contents != {}
+        except Exception, e:
+            log.error('WFS check for %s failed with exception: %s' % (url, str(e)))
+        return False
+
 
     def _get_object_extra(self, harvest_object, key):
         '''
