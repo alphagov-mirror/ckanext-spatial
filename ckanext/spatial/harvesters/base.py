@@ -1,6 +1,5 @@
 import re
 import cgitb
-import lxml.html
 import warnings
 import urllib2
 import requests
@@ -16,7 +15,6 @@ import mimetypes
 
 
 from pylons import config
-from owslib import wms
 import requests
 from lxml import etree
 
@@ -670,13 +668,12 @@ class SpatialHarvester(HarvesterBase):
         Checks if the provided URL actually points to a Web Map Service.
         '''
         try:
-            # as WebMapService rejects unicode use urllib2 in _get_content
-            # identify the version first otherwise OWSLib will default to 1.1.1
+            # rather than checking if the URL points to a WMS server using OWSLib
+            # just check that the root element tag is recognised as WMS as 
+            # Find map preview supports older WMS versions even if OWSLib does not
             xml = self._get_content(url)
-            doc = lxml.html.fromstring(xml)
-            version = doc.xpath("//@version")
-            s = wms.WebMapService(url, xml=xml, version=None if not version else version[0])
-            return isinstance(s.contents, dict) and s.contents != {}
+            doc = etree.fromstring(xml)
+            return doc.tag in ['WMT_MS_Capabilities', 'WMS_Capabilities']
         except Exception, e:
             message = 'WMS check for %s failed with exception: %s' % (url, str(e))
             if harvest_object:

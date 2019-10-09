@@ -1218,12 +1218,12 @@ class TestValidation(HarvestFixtureBase):
         assert_in('Error Message: "MI-4b (Abstract): Abstract is too short. GEMINI 2.3 requires', errors)
 
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
-    def test_18_unsupported_version_reported(self, mock_save_object_error):
+    def test_18_wms_1_1_0_supported(self, mock_save_object_error):
         harvester = SpatialHarvester()
-        harvester._is_wms('http://127.0.0.1:8999/gemini2.1/validation/14_Unsupported_version.xml', Mock())
+        is_wms = harvester._is_wms('http://127.0.0.1:8999/gemini2.1/validation/14_WMS_version 1_1.xml', Mock())
 
-        assert 'The WMS version (1.1.0) you requested is not implemented. Please use 1.1.1 or 1.3.0.' \
-            in mock_save_object_error.call_args[0][0]
+        assert not mock_save_object_error.called
+        assert is_wms
 
 
 def mock_valid_wms(mock_get_content, mock_wms):
