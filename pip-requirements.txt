@@ -12,5 +12,5 @@ pyOpenSSL==18.0.0
 pyparsing>=2.1.10
 pyproj==1.9.3
 requests>=2.0
-Shapely>=1.2.13
+Shapely==1.6.4
 urllib3==1.23
