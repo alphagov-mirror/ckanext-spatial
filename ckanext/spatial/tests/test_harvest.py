@@ -162,6 +162,7 @@ class TestHarvest(HarvestFixtureBase):
             assert obj.current == True
             assert obj.package_id in pkg_ids
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_fields_service(self):
 
         # Create source
@@ -270,9 +271,10 @@ class TestHarvest(HarvestFixtureBase):
             if not resource[key] == value:
                 raise AssertionError('Unexpected value in resource for %s: %s (was expecting %s)' % \
                     (key, resource[key], value))
-        assert datetime.strptime(resource['verified_date'],'%Y-%m-%dT%H:%M:%S.%f').date() == date.today()
+        assert datetime.strptime(resource['verified_date'],'%Y-%m-%dT%H:%M:%S').date() == date.today()
         assert resource['format'].lower() == 'wms'
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_fields_dataset(self):
 
         # Create source
@@ -424,7 +426,11 @@ class TestHarvest(HarvestFixtureBase):
         assert job.gather_errors[0].harvest_job_id == job.id
         assert 'Unable to get content for URL' in job.gather_errors[0].message
 
-    def test_harvest_error_validation(self):
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_error_validation(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
 
         # Create source
         source_fixture = {
@@ -467,6 +473,7 @@ class TestHarvest(HarvestFixtureBase):
         assert_in('One organisation name shall be provided', message)
 
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_update_records(self):
 
         # Create source
@@ -531,6 +538,7 @@ class TestHarvest(HarvestFixtureBase):
         assert second_obj.current == False
         assert first_obj.current == False
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_deleted_record(self):
 
         # Create source
@@ -603,8 +611,11 @@ class TestHarvest(HarvestFixtureBase):
         assert third_package_dict['state'] == u'active'
 
 
-
-    def test_harvest_different_sources_same_document(self):
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_different_sources_same_document(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
 
         # Create source1
         source1_fixture = {
@@ -670,7 +681,11 @@ class TestHarvest(HarvestFixtureBase):
         assert first_obj.current == False
 
 
-    def test_harvest_different_sources_same_document_but_deleted_inbetween(self):
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_different_sources_same_document_but_deleted_inbetween(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
 
         # Create source1
         source1_fixture = {
@@ -716,6 +731,7 @@ class TestHarvest(HarvestFixtureBase):
         assert first_obj.current == True
 
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_moves_sources(self):
 
         # Create source1
@@ -761,6 +777,7 @@ class TestHarvest(HarvestFixtureBase):
         # withdraw the package relating to the original harvest source.
 
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_import_command(self):
 
         # Create source
@@ -810,6 +827,175 @@ class TestHarvest(HarvestFixtureBase):
 
         source_dict = get_action('harvest_source_show')(self.context,{'id':source.id})
         assert source_dict['status']['total_datasets'] == 1
+
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
+    def test_harvest_import_duplicate_guid_raises_error(self, mock_save_object_error):
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1-waf/index-duplicate.html',
+            'source_type': u'gemini-waf'
+        }
+
+        source, job = self._create_source_and_job(source_fixture)
+
+        harvester = GeminiWafHarvester()
+
+        # We need to send an actual job, not the dict
+        object_ids = harvester.gather_stage(job)
+
+        for object_id in object_ids:
+            obj = HarvestObject.get(object_id)
+            harvester.import_stage(obj)
+
+        existing_source_url = Session.query(HarvestObjectExtra) \
+            .filter(HarvestObjectExtra.harvest_object_id==object_ids[0]) \
+            .filter(HarvestObjectExtra.key=='url') \
+            .first()
+
+        new_source_url = Session.query(HarvestObjectExtra) \
+            .filter(HarvestObjectExtra.harvest_object_id==object_ids[1]) \
+            .filter(HarvestObjectExtra.key=='url') \
+            .first()
+
+        assert 'Error importing Gemini document: Harvest object %s (%s) has a ' \
+               'GUID 11edc4ec-5269-40b9-86c8-17201fa4e74e-new already in use by %s (%s) in harvest source %s' % (
+                   object_ids[1], new_source_url.value,
+                   object_ids[0], existing_source_url.value,
+                   source.id
+                ) in mock_save_object_error.call_args[0][0]
+
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_deleted_dataset_then_reuse_guid_different_source_url(self, mock_save_object_error):
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1-waf/index-duplicate.html',
+            'source_type': u'gemini-waf'
+        }
+
+        source, job = self._create_source_and_job(source_fixture)
+
+        harvester = GeminiWafHarvester()
+
+        # We need to send an actual job, not the dict
+        object_ids = harvester.gather_stage(job)
+        objects = []
+
+        for object_id in object_ids:
+            obj = HarvestObject.get(object_id)
+            objects.append(obj)
+            harvester.import_stage(obj)
+
+        assert mock_save_object_error.call_count == 1
+
+        # set the first obj package/dataset state to deleted
+        Session.query(Package) \
+            .filter(Package.id == objects[0].package_id) \
+            .update({'state': u'deleted'})
+        Session.commit()
+
+        # check that second obj has no package/dataset
+        assert not objects[1].package_id
+
+        # do another import
+        for object_id in object_ids:
+            obj = HarvestObject.get(object_id)
+            harvester.import_stage(obj)
+
+        # no new exceptions logged
+        assert mock_save_object_error.call_count == 1
+
+        assert not objects[0].current
+        assert objects[1].current
+        assert objects[1].package_id
+        assert objects[1].package.state == 'active'
+
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_deleted_dataset_then_reuse_guid_different_source_url_single_update(self):
+        context = {
+            'model': model,
+            'session': Session,
+            'user': u'harvest'
+        }
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1-waf/wales1.xml',
+            'source_type': u'gemini-single'
+        }
+
+        harvester = GeminiDocHarvester()
+
+        source, first_job = self._create_source_and_job(source_fixture)
+
+        first_obj = self._run_job_for_single_document(first_job)
+
+        harvester.import_stage(first_obj)
+
+        # set the first obj package/dataset state to deleted
+        Session.query(Package) \
+            .filter(Package.id == first_obj.package_id) \
+            .update({'state': u'deleted'})
+        Session.commit()
+
+        source.url = u'http://127.0.0.1:8999/gemini2.1-waf/wales1a.xml'
+        source.save()
+
+        second_job = self._create_job(source.id)
+
+        second_obj = self._run_job_for_single_document(second_job)
+
+        harvester.import_stage(second_obj)
+
+        assert not first_obj.current
+        assert second_obj.current
+        assert second_obj.package_id
+        assert second_obj.package.state == 'active'
+
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_dataset_without_source_url_doesnt_check_for_duplicates(self, mock_save_object_error):
+        context = {
+            'model': model,
+            'session': Session,
+            'user': u'harvest'
+        }
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1-waf/wales1.xml',
+            'source_type': u'gemini-single'
+        }
+
+        harvester = GeminiDocHarvester()
+
+        source, first_job = self._create_source_and_job(source_fixture)
+
+        first_obj = self._run_job_for_single_document(first_job)
+
+        harvester.import_stage(first_obj)
+
+        # remove the harvest object extra url info as it wasn't captured before
+        Session.query(HarvestObjectExtra.value) \
+            .filter(HarvestObjectExtra.harvest_object_id==first_obj.id) \
+            .filter(HarvestObjectExtra.key=='url') \
+            .delete()
+
+        second_job = self._create_job(source.id)
+        second_obj = self._run_job_for_single_document(second_job)
+        harvester.import_stage(second_obj)
+
+        assert not mock_save_object_error.called
 
     def test_clean_tags(self):
         
@@ -1091,6 +1277,7 @@ class TestValidation(HarvestFixtureBase):
         assert len(errors) > 0
         assert_in('Descriptive keywords are mandatory', errors)
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_04_dataset_valid(self):
         errors = self.get_validation_errors('04_Dataset_Valid.xml')
         assert len(errors) == 0
@@ -1110,6 +1297,7 @@ class TestValidation(HarvestFixtureBase):
         assert len(errors) > 0
         assert_in('Descriptive keywords are mandatory', errors)
 
+    @freeze_time("2019-11-10T00:00:00")
     def test_08_series_valid(self):
         errors = self.get_validation_errors('08_Series_Valid.xml')
         assert len(errors) == 0
@@ -1129,7 +1317,11 @@ class TestValidation(HarvestFixtureBase):
         assert len(errors) > 0
         assert_in("Service type shall be one of 'discovery', 'view', 'download', 'transformation', 'invoke' or 'other' following INSPIRE generic names.", errors)
 
-    def test_12_service_valid(self):
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    @freeze_time("2019-11-10T00:00:00")
+    def test_12_service_valid(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
         errors = self.get_validation_errors('12_Service_Valid.xml')
         assert len(errors) == 0, errors
 
