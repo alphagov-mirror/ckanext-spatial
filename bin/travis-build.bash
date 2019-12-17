@@ -20,12 +20,7 @@ fi
 sed -i '/psycopg2/c\psycopg2' requirements.txt
 
 python setup.py develop
-if [ -f requirements-py2.txt ]
-then
-    pip install -r requirements-py2.txt
-else
-    pip install -r requirements.txt
-fi
+pip install -r requirements.txt
 pip install -r dev-requirements.txt
 cd -
 

@@ -163,7 +163,6 @@ class TestHarvest(HarvestFixtureBase):
             assert obj.current == True
             assert obj.package_id in pkg_ids
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_fields_service(self):
 
         # Create source
@@ -272,10 +271,9 @@ class TestHarvest(HarvestFixtureBase):
             if not resource[key] == value:
                 raise AssertionError('Unexpected value in resource for %s: %s (was expecting %s)' % \
                     (key, resource[key], value))
-        assert datetime.strptime(resource['verified_date'],'%Y-%m-%dT%H:%M:%S').date() == date.today()
+        assert datetime.strptime(resource['verified_date'],'%Y-%m-%dT%H:%M:%S.%f').date() == date.today()
         assert resource['format'].lower() == 'wms'
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_fields_dataset(self):
 
         # Create source
@@ -429,7 +427,6 @@ class TestHarvest(HarvestFixtureBase):
 
     @patch('owslib.wms.WebMapService')
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_error_validation(self, mock_get_content, mock_wms):
         mock_valid_wms(mock_get_content, mock_wms)
 
@@ -474,7 +471,6 @@ class TestHarvest(HarvestFixtureBase):
         assert_in('One organisation name shall be provided', message)
 
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_update_records(self):
 
         # Create source
@@ -539,7 +535,6 @@ class TestHarvest(HarvestFixtureBase):
         assert second_obj.current == False
         assert first_obj.current == False
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_deleted_record(self):
 
         # Create source
@@ -614,7 +609,6 @@ class TestHarvest(HarvestFixtureBase):
 
     @patch('owslib.wms.WebMapService')
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_different_sources_same_document(self, mock_get_content, mock_wms):
         mock_valid_wms(mock_get_content, mock_wms)
 
@@ -684,7 +678,6 @@ class TestHarvest(HarvestFixtureBase):
 
     @patch('owslib.wms.WebMapService')
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_different_sources_same_document_but_deleted_inbetween(self, mock_get_content, mock_wms):
         mock_valid_wms(mock_get_content, mock_wms)
 
@@ -732,7 +725,6 @@ class TestHarvest(HarvestFixtureBase):
         assert first_obj.current == True
 
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_moves_sources(self):
 
         # Create source1
@@ -778,7 +770,6 @@ class TestHarvest(HarvestFixtureBase):
         # withdraw the package relating to the original harvest source.
 
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_import_command(self):
 
         # Create source
@@ -868,7 +859,6 @@ class TestHarvest(HarvestFixtureBase):
                 ) in mock_save_object_error.call_args[0][0]
 
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_deleted_dataset_then_reuse_guid_different_source_url(self, mock_save_object_error):
 
         # Create source
@@ -916,7 +906,6 @@ class TestHarvest(HarvestFixtureBase):
         assert objects[1].package_id
         assert objects[1].package.state == 'active'
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_deleted_dataset_then_reuse_guid_different_source_url_single_update(self):
         context = {
             'model': model,
@@ -961,7 +950,6 @@ class TestHarvest(HarvestFixtureBase):
         assert second_obj.package.state == 'active'
 
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._save_object_error')
-    @freeze_time("2019-11-10T00:00:00")
     def test_harvest_dataset_without_source_url_doesnt_check_for_duplicates(self, mock_save_object_error):
         context = {
             'model': model,
@@ -1287,7 +1275,6 @@ class TestValidation(HarvestFixtureBase):
         assert len(errors) > 0
         assert_in('Descriptive keywords are mandatory', errors)
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_04_dataset_valid(self):
         errors = self.get_validation_errors('04_Dataset_Valid.xml')
         assert len(errors) == 0
@@ -1307,7 +1294,6 @@ class TestValidation(HarvestFixtureBase):
         assert len(errors) > 0
         assert_in('Descriptive keywords are mandatory', errors)
 
-    @freeze_time("2019-11-10T00:00:00")
     def test_08_series_valid(self):
         errors = self.get_validation_errors('08_Series_Valid.xml')
         assert len(errors) == 0
@@ -1335,7 +1321,6 @@ class TestValidation(HarvestFixtureBase):
 
     @patch('owslib.wms.WebMapService')
     @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
-    @freeze_time("2019-11-10T00:00:00")
     def test_12_service_valid(self, mock_get_content, mock_wms):
         mock_valid_wms(mock_get_content, mock_wms)
         errors = self.get_validation_errors('12_Service_Valid.xml')

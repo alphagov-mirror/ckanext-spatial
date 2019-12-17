@@ -239,8 +239,6 @@ class SpatialQuery(p.SingletonPlugin):
         from ckanext.spatial.lib import  validate_bbox
         from ckan.lib.search import SearchError
 
-        print('**** before search')
-
         if search_params.get('extras', None) and search_params['extras'].get('ext_bbox', None):
 
             bbox = validate_bbox(search_params['extras']['ext_bbox'])
@@ -261,9 +259,6 @@ class SpatialQuery(p.SingletonPlugin):
                 search_params = self._params_for_solr_spatial_field_search(bbox, search_params)
             elif self.search_backend == 'postgis':
                 search_params = self._params_for_postgis_search(bbox, search_params)
-
-        print('*** search backend', self.search_backend)
-        print('*** search params', search_params)
 
         return search_params
 
@@ -369,7 +364,7 @@ class SpatialQuery(p.SingletonPlugin):
             # of datasets within the bbox
             bbox_query_ids = [extent.package_id for extent in extents]
 
-            q = search_params.get('q','').strip()
+            q = search_params.get('q','').strip() or '""'
             new_q = '%s AND ' % q if q else ''
             new_q += '(%s)' % ' OR '.join(['id:%s' % id for id in bbox_query_ids])
 
