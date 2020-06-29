@@ -8,9 +8,10 @@ from freezegun import freeze_time
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_equal, assert_in, assert_raises
 
+from ckan.tests import helpers
 from ckan.lib.base import config
 from ckan import model
-from ckan.model import Session, Package, Group, User
+from ckan.model import Session, Package, Group, Tag, User
 from ckan.logic.schema import default_update_package_schema, default_create_package_schema
 from ckan.logic import get_action
 
@@ -162,6 +163,81 @@ class TestHarvest(HarvestFixtureBase):
         for obj in objects:
             assert obj.current == True
             assert obj.package_id in pkg_ids
+
+    @freeze_time("2019-11-10T00:00:00")
+    def test_harvest_invalid_tag_allowed(self):
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1/service-invalid-tag.xml',
+            'source_type': u'gemini-single'
+        }
+
+        source, job = self._create_source_and_job(source_fixture)
+
+        harvester = GeminiDocHarvester()
+
+        object_ids = harvester.gather_stage(job)
+        assert object_ids, len(object_ids) == 1
+
+        assert len(job.gather_errors) == 0
+
+        obj = HarvestObject.get(object_ids[0])
+        assert obj, obj.content
+        assert obj.guid == u'test-service-1'
+
+        harvester.import_stage(obj)
+
+        # No object errors
+        assert len(obj.errors) == 0
+
+        # package has been created
+        assert obj.package_id
+
+        # all tags found created
+        assert model.Session.query(Tag).count() == 2
+        tags = model.Session.query(Tag).all()
+
+        assert tags[0].name == "Addresses"
+        assert tags[1].name == "Scottish National Gazetteer(*invalid*)"
+
+    @freeze_time("2019-11-10T00:00:00")
+    @helpers.change_config('ckan.spatial.validator.use_default_tag_schema', 'true')
+    def test_harvest_invalid_tag_default_tag_schema(self):
+
+        # Create source
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.1/service-invalid-tag.xml',
+            'source_type': u'gemini-single'
+        }
+
+        source, job = self._create_source_and_job(source_fixture)
+
+        harvester = GeminiDocHarvester()
+
+        object_ids = harvester.gather_stage(job)
+        assert object_ids, len(object_ids) == 1
+
+        assert len(job.gather_errors) == 0
+
+        obj = HarvestObject.get(object_ids[0])
+        assert obj, obj.content
+        assert obj.guid == u'test-service-1'
+
+        harvester.import_stage(obj)
+
+        # Tag validation error
+        assert len(obj.errors) == 1
+
+        # package has been created
+        assert obj.package_id
+
+        # only the valid tag is created
+        assert model.Session.query(Tag).one().name == 'Addresses'
 
     @freeze_time("2019-11-10T00:00:00")
     def test_harvest_fields_service(self):
@@ -1404,6 +1480,38 @@ class TestValidation(HarvestFixtureBase):
         assert 'The WMS version (1.1.0) you requested is not implemented. Please use 1.1.1 or 1.3.0.' \
             in mock_save_object_error.call_args[0][0]
 
+    @helpers.change_config('ckan.spatial.validator.use_default_tag_schema', 'true')
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    def test_19_validation_error_using_default_tag_schema(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.3/validation/BGSsv-examplea1-invalid-tags.xml',
+            'source_type': u'gemini-single'
+        }
+
+        errors = self.get_validation_errors(
+            'BGSsv-examplea1-invalid-tags.xml', source_fixture=source_fixture, gemini_profile='gemini2-3')
+
+        assert errors == 'Tag "Geology(*invalid*)" must be alphanumeric characters or symbols: -_.;' \
+            ' Tag "NERC_DDC!" must be alphanumeric characters or symbols: -_.' 
+
+    @patch('owslib.wms.WebMapService')
+    @patch('ckanext.spatial.harvesters.base.SpatialHarvester._get_content')
+    def test_20_no_validation_error_using_spatial_tag_schema(self, mock_get_content, mock_wms):
+        mock_valid_wms(mock_get_content, mock_wms)
+        source_fixture = {
+            'title': 'Test Source',
+            'name': 'test-source',
+            'url': u'http://127.0.0.1:8999/gemini2.3/validation/BGSsv-examplea1-invalid-tags.xml',
+            'source_type': u'gemini-single'
+        }
+
+        errors = self.get_validation_errors(
+            'BGSsv-examplea1-invalid-tags.xml', source_fixture=source_fixture, gemini_profile='gemini2-3')
+        assert not errors
 
 def mock_valid_wms(mock_get_content, mock_wms):
     # directory changed to tests/xml directory in xml_file_server.py
