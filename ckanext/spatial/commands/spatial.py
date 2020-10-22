@@ -77,9 +77,9 @@ class Spatial(CkanCommand):
                 geometry = json.loads(value)
 
                 count += 1
-            except ValueError,e:
+            except ValueError as e:
                 errors.append(u'Package %s - Error decoding JSON object: %s' % (package.id,str(e)))
-            except TypeError,e:
+            except TypeError as e:
                 errors.append(u'Package %s - Error decoding JSON object: %s' % (package.id,str(e)))
 
             save_package_extent(package.id,geometry)
@@ -94,4 +94,3 @@ class Spatial(CkanCommand):
         msg = "Done. Extents generated for %i out of %i packages" % (count,len(packages))
 
         print msg
-

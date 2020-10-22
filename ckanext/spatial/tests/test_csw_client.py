@@ -1,8 +1,9 @@
 import time
-from urllib2 import urlopen
+from urllib.error import URLError
+from urllib.request import urlopen
 import os
 
-from pylons import config
+from ckan.plugins.toolkit import config
 from nose.plugins.skip import SkipTest
 
 from ckan.model import engine_is_sqlite
@@ -34,11 +35,10 @@ class CkanServerCase:
     @staticmethod
     def _wait_for_url(url='http://127.0.0.1:5000/', timeout=15):
         for i in range(int(timeout)*100):
-            import urllib2
             import time
             try:
-                response = urllib2.urlopen(url)
-            except urllib2.URLError:
+                response = urlopen(url)
+            except URLError:
                 time.sleep(0.01)
             else:
                 break
@@ -63,4 +63,3 @@ class CkanProcess(CkanServerCase):
     @classmethod
     def teardown_class(cls):
         cls._stop_ckan_server(cls.pid)
-

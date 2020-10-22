@@ -9,7 +9,7 @@ but can be easily adapted for other INSPIRE/ISO19139 XML metadata
 
 '''
 import os
-from urlparse import urlparse
+from urllib import parse as urlparse
 from datetime import datetime
 from numbers import Number
 import uuid
@@ -72,7 +72,7 @@ class GeminiHarvester(SpatialHarvester):
             return False
         try:
             return self.import_gemini_object(harvest_object)
-        except Exception, e:
+        except Exception as e:
             log.error('Exception during import: %s' % text_traceback())
             if not str(e).strip():
                 self._save_object_error('Error importing Gemini document.', harvest_object, 'Import')
@@ -593,7 +593,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
 
         try:
             self._setup_csw_client(url)
-        except Exception, e:
+        except Exception as e:
             self._save_gather_error('Error contacting the CSW server: %s' % e, harvest_job)
             return None
 
@@ -619,11 +619,11 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
 
                     ids.append(obj.id)
                     used_identifiers.append(identifier)
-                except Exception, e:
+                except Exception as e:
                     self._save_gather_error('Error for the identifier %s [%r]' % (identifier,e), harvest_job)
                     continue
 
-        except Exception, e:
+        except Exception as e:
             log.error('Exception: %s' % text_traceback())
             self._save_gather_error('Error gathering the identifiers from the CSW server [%s]' % str(e), harvest_job)
             return None
@@ -641,7 +641,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
         url = harvest_object.source.url
         try:
             self._setup_csw_client(url)
-        except Exception, e:
+        except Exception as e:
             self._save_object_error('Error contacting the CSW server: %s' % e,
                                     harvest_object)
             return False
@@ -649,7 +649,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
         identifier = harvest_object.guid
         try:
             record = self.csw.getrecordbyid([identifier])
-        except Exception, e:
+        except Exception as e:
             self._save_object_error('Error getting the CSW record with GUID %s' % identifier, harvest_object)
             return False
 
@@ -667,7 +667,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
 
             harvest_object.content = content.strip()
             harvest_object.save()
-        except Exception,e:
+        except Exception as e :
             self._save_object_error('Error saving the harvest object for GUID %s [%r]' % \
                                     (identifier, e), harvest_object)
             return False
@@ -705,7 +705,7 @@ class GeminiDocHarvester(GeminiHarvester, SingletonPlugin):
         # Get contents
         try:
             content = self._get_content_as_unicode(url)
-        except Exception,e:
+        except Exception as e :
             self._save_gather_error('Unable to get content for URL: %s: %r' % \
                                         (url, e),harvest_job)
             return None
@@ -728,7 +728,7 @@ class GeminiDocHarvester(GeminiHarvester, SingletonPlugin):
             else:
                 self._save_gather_error('Could not get the GUID for source %s' % url, harvest_job)
                 return None
-        except Exception, e:
+        except Exception as e:
             self._save_gather_error('Error parsing the document. Is this a valid Gemini document?: %s [%r]'% (url,e),harvest_job)
             if debug_exception_mode:
                 raise
@@ -767,7 +767,7 @@ class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
         # Get contents
         try:
             content = self._get_content_as_unicode(url)
-        except Exception,e:
+        except Exception as e :
             self._save_gather_error('Unable to get content for URL: %s: %r' % \
                                         (url, e),harvest_job)
             return None
@@ -776,7 +776,7 @@ class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
             for url in self._extract_urls(content, url):
                 try:
                     content = self._get_content_as_unicode(url)
-                except Exception, e:
+                except Exception as e:
                     msg = 'Couldn\'t harvest WAF link: %s: %s' % (url, e)
                     self._save_gather_error(msg,harvest_job)
                     continue
@@ -798,11 +798,11 @@ class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
                             ids.append(obj.id)
 
 
-                    except Exception,e:
+                    except Exception as e :
                         msg = 'Could not get GUID for source %s: %r' % (url,e)
                         self._save_gather_error(msg,harvest_job)
                         continue
-        except Exception, e:
+        except Exception as e:
             msg = 'Error extracting URLs from %s' % url
             self._save_gather_error(msg,harvest_job)
             return None
@@ -826,7 +826,7 @@ class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
         try:
             parser = etree.HTMLParser()
             tree = etree.fromstring(content, parser=parser)
-        except Exception, inst:
+        except Exception as inst:
             msg = 'Couldn\'t parse content into a tree: %s: %s' \
                   % (inst, content)
             raise Exception(msg)

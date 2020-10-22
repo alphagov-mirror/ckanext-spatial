@@ -88,7 +88,7 @@ class Validation(CkanCommand):
         print 'Validators: %r' % validators.profiles
         try:
             xml_string = metadata_xml.encode("utf-8")
-        except UnicodeDecodeError, e:
+        except UnicodeDecodeError as e:
             print 'ERROR: Unicode Error reading file \'%s\': %s' % \
                   (metadata_filepath, e)
             sys.exit(1)
@@ -103,7 +103,7 @@ class Validation(CkanCommand):
             try:
                 iso_document = ISODocument(xml_string)
                 iso_values = iso_document.read_values()
-            except Exception, e:
+            except Exception as e:
                 valid = False
                 errors.append('CKAN exception reading values from ISODocument: %s' % e)
         

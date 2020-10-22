@@ -62,8 +62,7 @@ class ReportTable(object):
                 row_formatted.append(cell)
             try:
                 csvwriter.writerow(row_formatted)
-            except Exception, e:
+            except Exception as e:
                 raise Exception("%s: %s, %s"%(e, row, row_formatted))
         csvout.seek(0)
         return csvout.read()
-        

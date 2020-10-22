@@ -2,12 +2,12 @@ import re
 import cgitb
 import lxml.html
 import warnings
-import urllib2
+from urllib.request import urlopen
 import requests
 import sys
 import logging
 from string import Template
-from urlparse import urlparse
+from urllib import parse as urlparse
 from datetime import datetime
 import uuid
 import hashlib
@@ -15,7 +15,8 @@ import dateutil
 import mimetypes
 
 
-from pylons import config
+# from pylons import config
+from ckan.plugins.toolkit import config
 from owslib import wms
 import requests
 from lxml import etree
@@ -158,7 +159,7 @@ class SpatialHarvester(HarvesterBase):
                     if not isinstance(source_config_obj[key],bool):
                         raise ValueError('%s must be boolean' % key)
 
-        except ValueError, e:
+        except ValueError as e:
             raise e
 
         return source_config
@@ -351,7 +352,7 @@ class SpatialHarvester(HarvesterBase):
                 xmax = float(bbox['east'])
                 ymin = float(bbox['south'])
                 ymax = float(bbox['north'])
-            except ValueError, e:
+            except ValueError as e:
                 self._save_object_error('Error parsing bounding box value: {0}'.format(str(e)),
                                     harvest_object, 'Import')
             else:
@@ -512,7 +513,7 @@ class SpatialHarvester(HarvesterBase):
 
             iso_parser = ISODocument(harvest_object.content)
             iso_values = iso_parser.read_values()
-        except Exception, e:
+        except Exception as e:
             self._save_object_error('Error parsing ISO document for object {0}: {1}'.format(harvest_object.id, str(e)),
                                     harvest_object, 'Import')
             return False
@@ -610,7 +611,7 @@ class SpatialHarvester(HarvesterBase):
             try:
                 package_id = p.toolkit.get_action('package_create')(context, package_dict)
                 log.info('Created new package %s with guid %s', package_id, harvest_object.guid)
-            except p.toolkit.ValidationError, e:
+            except p.toolkit.ValidationError as e:
                 self._save_object_error('Validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
                 return False
 
@@ -656,7 +657,7 @@ class SpatialHarvester(HarvesterBase):
                 try:
                     package_id = p.toolkit.get_action('package_update')(context, package_dict)
                     log.info('Updated package %s with guid %s', package_id, harvest_object.guid)
-                except p.toolkit.ValidationError, e:
+                except p.toolkit.ValidationError as e:
                     self._save_object_error('Validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
                     return False
 
@@ -677,7 +678,7 @@ class SpatialHarvester(HarvesterBase):
             version = doc.xpath("//@version")
             s = wms.WebMapService(url, xml=xml, version=None if not version else version[0])
             return isinstance(s.contents, dict) and s.contents != {}
-        except Exception, e:
+        except Exception as e:
             message = 'WMS check for %s failed with exception: %s' % (url, str(e))
             if harvest_object:
                 self._save_object_error(message, harvest_object, 'Import')
@@ -772,7 +773,7 @@ class SpatialHarvester(HarvesterBase):
         DEPRECATED: Use _get_content_as_unicode instead
         '''
         url = url.replace(' ', '%20')
-        http_response = urllib2.urlopen(url)
+        http_response = urlopen(url)
         return http_response.read()
 
     def _get_content_as_unicode(self, url):
@@ -825,7 +826,7 @@ class SpatialHarvester(HarvesterBase):
 
         try:
             xml = etree.fromstring(document_string)
-        except etree.XMLSyntaxError, e:
+        except etree.XMLSyntaxError as e:
             self._save_object_error('Could not parse XML file: {0}'.format(str(e)), harvest_object, 'Import')
             return False, None, []
 

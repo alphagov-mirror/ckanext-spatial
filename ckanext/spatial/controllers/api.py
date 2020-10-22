@@ -5,7 +5,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from pylons import response
+from ckan.common import response
 from pkg_resources import resource_stream
 from lxml import etree
 

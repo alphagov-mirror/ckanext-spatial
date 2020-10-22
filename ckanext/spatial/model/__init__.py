@@ -6,5 +6,5 @@ except ImportError:
     import pkgutil
     __path__ = pkgutil.extend_path(__path__, __name__)
 
-from package_extent import *
-from harvested_metadata import *
+from ckanext.spatial.model.package_extent import *
+from ckanext.spatial.model.harvested_metadata import *

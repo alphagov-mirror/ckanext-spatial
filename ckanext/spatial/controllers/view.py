@@ -1,4 +1,5 @@
-import urllib2
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 from ckan.lib.base import BaseController, c, request, \
     response, render, abort
@@ -28,11 +29,11 @@ class ViewController(BaseController):
         if 'url' not in request.params:
             abort(400)
         try:
-            server_response = urllib2.urlopen(request.params['url'])
+            server_response = urlopen(request.params['url'])
             headers = server_response.info()
             if headers.get('Content-Type'):
                 response.content_type = headers.get('Content-Type')
             return server_response.read()
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             response.status_int = e.getcode()
             return
