@@ -20,7 +20,8 @@ def setup_db(pycsw_config):
     from sqlalchemy import Column, Text
 
     database = pycsw_config.get('repository', 'database')
-    table_name = pycsw_config.get('repository', 'table', 'records')
+    # table_name = pycsw_config.get('repository', 'table', 'records')
+    table_name = pycsw_config.get('repository', 'table')
 
     ckan_columns = [
         Column('ckan_id', Text, index=True),
@@ -56,42 +57,50 @@ def set_keywords(pycsw_config_file, pycsw_config, ckan_url, limit=20):
 def load(pycsw_config, ckan_url):
 
     database = pycsw_config.get('repository', 'database')
-    table_name = pycsw_config.get('repository', 'table', 'records')
+    # table_name = pycsw_config.get('repository', 'table', 'records')
+    table_name = pycsw_config.get('repository', 'table')
 
     context = pycsw.core.config.StaticContext()
     repo = repository.Repository(database, context, table=table_name)
 
     log.info('Started gathering CKAN datasets identifiers: {0}'.format(str(datetime.datetime.now())))
 
-    query = 'api/search/dataset?qjson={"fl":"id,metadata_modified,extras_harvest_object_id,extras_metadata_source", "q":"harvest_object_id:[\\"\\" TO *]", "limit":1000, "start":%s}'
+    # query = 'api/search/dataset?qjson={"fl":"id,metadata_modified,extras_harvest_object_id,extras_metadata_source", "q":"harvest_object_id:[\\"\\" TO *]", "limit":1000, "start":%s}'
+    query = 'api/search/dataset?fl=id,metadata_modified,extras_harvest_object_id,extras_metadata_source&q=harvest_object_id:[\\"\\" TO *]&start=%s'
 
     start = 0
 
     gathered_records = {}
 
     while True:
-        url = ckan_url + query % start
+        try:
+            url = ckan_url + query % start
+            print("*** url", url)
 
-        response = requests.get(url)
-        listing = response.json()
-        if not isinstance(listing, dict):
-            raise RuntimeError, 'Wrong API response: %s' % listing
-        results = listing.get('results')
-        if not results:
-            break
-        for result in results:
-            gathered_records[result['id']] = {
-                'metadata_modified': result['metadata_modified'],
-                'harvest_object_id': result['extras']['harvest_object_id'],
-                'source': result['extras'].get('metadata_source')
-            }
-
-        start = start + 1000
-        log.debug('Gathered %s' % start)
+            response = requests.get(url)
+            print("*** response", response)
+            listing = response.json()
+            if not isinstance(listing, dict):
+                raise (RuntimeError, 'Wrong API response: %s' % listing)
+            results = listing.get('results')
+            if not results:
+                break
+            for result in results:
+                gathered_records[result['id']] = {
+                    'metadata_modified': result['metadata_modified'],
+                    'harvest_object_id': result['harvest_object_id'],
+                    'source': result.get('metadata_source')
+                }
+            start = start + 1000
+            log.debug('Gathered %s' % start)
+        except Exception as e:
+            log.error("Error gathering: %r", e)
 
     log.info('Gather finished ({0} datasets): {1}'.format(
         len(gathered_records.keys()),
         str(datetime.datetime.now())))
+
+    print('**** next stage')
 
     existing_records = {}
 
@@ -107,6 +116,8 @@ def load(pycsw_config, ckan_url):
     for key in set(gathered_records) & set(existing_records):
         if gathered_records[key]['metadata_modified'] > existing_records[key]:
             changed.add(key)
+
+    print('**** next stage 1', len(gathered_records))
 
     for ckan_id in deleted:
         try:
@@ -131,9 +142,18 @@ def load(pycsw_config, ckan_url):
         except Exception as err:
             log.error('ERROR: not inserted %s Error:%s' % (ckan_id, err))
 
+    print('**** next stage 2', changed)
+
     for ckan_id in changed:
-        ckan_info = gathered_records[ckan_id]
-        record = get_record(context, repo, ckan_url, ckan_id, ckan_info)
+        try:
+            ckan_info = gathered_records[ckan_id]
+            record = get_record(context, repo, ckan_url, ckan_id, ckan_info)
+        except Exception as e:
+            log.error("Error: %r", e)
+            print("Exception ", e)
+
+        print('**** next stage 3')
+
         if not record:
             continue
         update_dict = dict([(getattr(repo.dataset, key),
@@ -147,7 +167,7 @@ def load(pycsw_config, ckan_url):
             log.info('Changed %s' % ckan_id)
         except Exception as err:
             repo.session.rollback()
-            raise RuntimeError, 'ERROR: %s' % str(err)
+            log.error(RuntimeError, 'ERROR: %s' % str(err))
 
 
 def clear(pycsw_config):
@@ -155,7 +175,7 @@ def clear(pycsw_config):
     from sqlalchemy import create_engine, MetaData, Table
 
     database = pycsw_config.get('repository', 'database')
-    table_name = pycsw_config.get('repository', 'table', 'records')
+    table_name = pycsw_config.get('repository', 'table')
 
     log.debug('Creating engine')
     engine = create_engine(database)
@@ -233,7 +253,7 @@ def _load_config(file_path):
 
 import os
 import argparse
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -270,5 +290,5 @@ if __name__ == '__main__':
     elif arg.command == 'clear':
         clear(pycsw_config)
     else:
-        print 'Unknown command {0}'.format(arg.command)
+        print('Unknown command {0}'.format(arg.command))
         sys.exit(1)

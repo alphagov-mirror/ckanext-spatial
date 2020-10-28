@@ -59,6 +59,7 @@ def package_error_summary(error_dict):
             summary[p.toolkit._(prettify(key))] = error[0]
     return summary
 
+
 class SpatialMetadata(p.SingletonPlugin):
 
     p.implements(p.IPackageController, inherit=True)
