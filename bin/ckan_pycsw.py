@@ -67,7 +67,6 @@ def load(pycsw_config, ckan_url):
 
     # query = 'api/search/dataset?qjson={"fl":"id,metadata_modified,extras_harvest_object_id,extras_metadata_source", "q":"harvest_object_id:[\\"\\" TO *]", "limit":1000, "start":%s}'
     query = 'api/search/dataset?fl=id,metadata_modified,extras_harvest_object_id,extras_metadata_source&q=harvest_object_id:[\\"\\" TO *]&start=%s'
-
     start = 0
 
     gathered_records = {}
@@ -75,10 +74,8 @@ def load(pycsw_config, ckan_url):
     while True:
         try:
             url = ckan_url + query % start
-            print("*** url", url)
 
             response = requests.get(url)
-            print("*** response", response)
             listing = response.json()
             if not isinstance(listing, dict):
                 raise (RuntimeError, 'Wrong API response: %s' % listing)
@@ -91,7 +88,7 @@ def load(pycsw_config, ckan_url):
                     'harvest_object_id': result['harvest_object_id'],
                     'source': result.get('metadata_source')
                 }
-            start = start + 1000
+            start += len(results)
             log.debug('Gathered %s' % start)
         except Exception as e:
             log.error("Error gathering: %r", e)
@@ -99,8 +96,6 @@ def load(pycsw_config, ckan_url):
     log.info('Gather finished ({0} datasets): {1}'.format(
         len(gathered_records.keys()),
         str(datetime.datetime.now())))
-
-    print('**** next stage')
 
     existing_records = {}
 
@@ -116,8 +111,6 @@ def load(pycsw_config, ckan_url):
     for key in set(gathered_records) & set(existing_records):
         if gathered_records[key]['metadata_modified'] > existing_records[key]:
             changed.add(key)
-
-    print('**** next stage 1', len(gathered_records))
 
     for ckan_id in deleted:
         try:
@@ -142,8 +135,6 @@ def load(pycsw_config, ckan_url):
         except Exception as err:
             log.error('ERROR: not inserted %s Error:%s' % (ckan_id, err))
 
-    print('**** next stage 2', changed)
-
     for ckan_id in changed:
         try:
             ckan_info = gathered_records[ckan_id]
@@ -151,8 +142,6 @@ def load(pycsw_config, ckan_url):
         except Exception as e:
             log.error("Error: %r", e)
             print("Exception ", e)
-
-        print('**** next stage 3')
 
         if not record:
             continue
