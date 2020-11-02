@@ -1,6 +1,7 @@
 import os
 import requests
 
+from io import IOBase
 from pkg_resources import resource_stream
 from ckanext.spatial.model import ISODocument
 
@@ -258,7 +259,7 @@ class SchematronValidator(BaseValidator):
             "xml/schematron/iso_abstract_expand.xsl",
             "xml/schematron/iso_svrl_for_xslt1.xsl",
             ]
-        if isinstance(schema, file):
+        if isinstance(schema, IOBase):
             parser = etree.XMLParser(load_dtd=True)
             parser.resolvers.add(SchDocumentResolver())
             compiled = etree.parse(schema, parser)
