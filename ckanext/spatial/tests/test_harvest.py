@@ -285,7 +285,7 @@ class TestHarvest(HarvestFixtureBase):
 
         package_dict['tags'] = self.clean_tags(package_dict['tags'])
 
-        for key,value in expected.iteritems():
+        for key,value in expected.items():
             if not package_dict[key] == value:
                 raise AssertionError('Unexpected value for %s: %s (was expecting %s)' % \
                     (key, package_dict[key], value))
@@ -322,7 +322,7 @@ class TestHarvest(HarvestFixtureBase):
             'temporal_coverage-to': u'["2004-06-16"]',
         }
 
-        for key,value in expected_extras.iteritems():
+        for key,value in expected_extras.items():
             extra_value = self.find_extra(package_dict, key)
             if extra_value is None:
                 raise AssertionError('Extra %s not present in package' % key)
@@ -342,7 +342,7 @@ class TestHarvest(HarvestFixtureBase):
         }
 
         resource = package_dict['resources'][0]
-        for key,value in expected_resource.iteritems():
+        for key,value in expected_resource.items():
             if not key in resource:
                 raise AssertionError('Expected key not in resource: %s' % (key))
             if not resource[key] == value:
@@ -397,7 +397,7 @@ class TestHarvest(HarvestFixtureBase):
 
         package_dict['tags'] = self.clean_tags(package_dict['tags'])
 
-        for key,value in expected.iteritems():
+        for key,value in expected.items():
             if not package_dict[key] == value:
                 raise AssertionError('Unexpected value for %s: %s (was expecting %s)' % \
                     (key, package_dict[key], value))
@@ -432,7 +432,7 @@ class TestHarvest(HarvestFixtureBase):
             'temporal_coverage-to': u'["2010"]',
         }
 
-        for key, value in expected_extras.iteritems():
+        for key, value in expected_extras.items():
             extra_value = self.find_extra(package_dict, key)
             if extra_value is None:
                 raise AssertionError('Extra %s not present in package' % key)
@@ -451,7 +451,7 @@ class TestHarvest(HarvestFixtureBase):
         }
 
         resource = package_dict['resources'][0]
-        for key,value in expected_resource.iteritems():
+        for key,value in expected_resource.items():
             if not resource[key] == value:
                 raise AssertionError('Unexpected value in resource for %s: %s (was expecting %s)' % \
                     (key, resource[key], value))
@@ -1124,7 +1124,7 @@ class TestHarvest(HarvestFixtureBase):
               'publisher_identifier': 'dummy',
               'metadata_created' : datetime.now(),
               'metadata_modified' : datetime.now(),
-              'guid': unicode(uuid4()),
+              'guid': str(uuid4()),
               'identifier': 'dummy'}
         
         package_data = call_action('package_create', context=context, **package_dict)

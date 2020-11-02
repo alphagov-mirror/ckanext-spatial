@@ -47,7 +47,7 @@ def package_error_summary(error_dict):
         return p.toolkit._(field_name.replace('_', ' '))
 
     summary = {}
-    for key, error in error_dict.iteritems():
+    for key, error in error_dict.items():
         if key == 'resources':
             summary[p.toolkit._('Resources')] = p.toolkit._(
                 'Package resource(s) invalid')

@@ -9,7 +9,7 @@ but can be easily adapted for other INSPIRE/ISO19139 XML metadata
 
 '''
 import os
-from urllib import parse as urlparse
+from urllib.parse import urlparse
 from datetime import datetime
 from numbers import Number
 import uuid
@@ -104,7 +104,7 @@ class GeminiHarvester(SpatialHarvester):
             if any(schema in ['gemini2', 'gemini2-1.3'] for schema in self._validator.profiles):
                 self._save_object_error('gemini2/gemini2-1.3 will be deprecated, please use gemin2-3', self.obj, 'Validation')
 
-        unicode_gemini_string = etree.tostring(xml, encoding=unicode, pretty_print=True)
+        unicode_gemini_string = etree.tostring(xml, encoding=str, pretty_print=True)
 
         # may raise Exception for errors
         package_dict = self.write_package_from_gemini_string(unicode_gemini_string, harvest_object)
@@ -256,10 +256,10 @@ class GeminiHarvester(SpatialHarvester):
                 extras['licence_url'] = licence_url_extracted
 
         extras['access_constraints'] = gemini_values.get('limitations-on-public-access','')
-        if gemini_values.has_key('temporal-extent-begin'):
+        if 'temporal-extent-begin' in gemini_values:
             #gemini_values['temporal-extent-begin'].sort()
             extras['temporal_coverage-from'] = gemini_values['temporal-extent-begin']
-        if gemini_values.has_key('temporal-extent-end'):
+        if 'temporal-extent-end' in gemini_values:
             #gemini_values['temporal-extent-end'].sort()
             extras['temporal_coverage-to'] = gemini_values['temporal-extent-end']
 
@@ -356,8 +356,8 @@ class GeminiHarvester(SpatialHarvester):
                     view_resources[0]['ckan_recommended_wms_preview'] = True
 
         extras_as_dict = []
-        for key,value in extras.iteritems():
-            if isinstance(value,(basestring,Number)):
+        for key,value in extras.items():
+            if isinstance(value,(str,Number)):
                 extras_as_dict.append({'key':key,'value':value})
             else:
                 extras_as_dict.append({'key':key,'value':json.dumps(value)})
@@ -506,7 +506,7 @@ class GeminiHarvester(SpatialHarvester):
             package_schema = logic.schema.default_update_package_schema()
 
         tag_schema = logic.schema.default_tags_schema()
-        tag_schema['name'] = [not_empty,unicode]
+        tag_schema['name'] = [not_empty,str]
         package_schema['tags'] = tag_schema
 
         context = {'model':model,
@@ -518,8 +518,8 @@ class GeminiHarvester(SpatialHarvester):
         if not package:
             # We need to explicitly provide a package ID, otherwise ckanext-spatial
             # won't be be able to link the extent to the package.
-            package_dict['id'] = unicode(uuid.uuid4())
-            package_schema['id'] = [unicode]
+            package_dict['id'] = str(uuid.uuid4())
+            package_schema['id'] = [str]
 
             action_function = get_action('package_create')
         else:
@@ -796,7 +796,6 @@ class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
                             obj.save()
 
                             ids.append(obj.id)
-
 
                     except Exception as e :
                         msg = 'Could not get GUID for source %s: %r' % (url,e)

@@ -53,7 +53,7 @@ class Validation(CkanCommand):
         from ckanext.spatial.lib.reports import validation_report
 
         if len(self.args) >= 2:
-            package_ref = unicode(self.args[1])
+            package_ref = str(self.args[1])
             pkg = model.Package.get(package_ref)
             if not pkg:
                 print 'Package ref "%s" not recognised' % package_ref

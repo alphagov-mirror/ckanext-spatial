@@ -20,7 +20,7 @@ from ckanext.spatial.tests.base import SpatialTestBase
 class TestCompareGeometries(SpatialTestBase):
 
     def _get_extent_object(self, geometry):
-        if isinstance(geometry, basestring):
+        if isinstance(geometry, str):
             geometry = json.loads(geometry)
         shape = asShape(geometry)
         return PackageExtent(package_id='xxx',

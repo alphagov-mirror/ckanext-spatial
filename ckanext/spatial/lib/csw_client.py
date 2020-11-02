@@ -33,7 +33,7 @@ class OwsService(object):
                 pass
             elif callable(val):
                 pass
-            elif isinstance(val, basestring):
+            elif isinstance(val, str):
                 md[attr] = val
             elif isinstance(val, int):
                 md[attr] = val
@@ -134,7 +134,7 @@ class CswService(OwsService):
             if matches == 0:
                 matches = csw.results['matches']
 
-            identifiers = csw.records.keys()
+            identifiers = list(csw.records.keys())
             if limit is not None:
                 identifiers = identifiers[:(limit-startposition)]
             for ident in identifiers:
@@ -170,22 +170,20 @@ class CswService(OwsService):
             raise CswError(err)
         if not csw.records:
             return
-        record = self._xmd(csw.records.values()[0])
-
+        record = self._xmd(list(csw.records.values())[0])
         ## strip off the enclosing results container, we only want the metadata
         #md = csw._exml.find("/gmd:MD_Metadata")#, namespaces=namespaces)
         # Ordinary Python version's don't support the metadata argument
         md = csw._exml.find("/{http://www.isotc211.org/2005/gmd}MD_Metadata")
         mdtree = etree.ElementTree(md)
         try:
-            record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding=unicode)
+            record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding=str)
         except TypeError:
             # API incompatibilities between different flavours of elementtree
             try:
-                record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding=unicode)
+                record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding=str)
             except AssertionError:
-                record["xml"] = etree.tostring(md, pretty_print=True, encoding=unicode)
-
+                record["xml"] = etree.tostring(md, pretty_print=True, encoding=str)
         record["xml"] = '<?xml version="1.0" encoding="UTF-8"?>\n' + record["xml"]
         record["tree"] = mdtree
         return record

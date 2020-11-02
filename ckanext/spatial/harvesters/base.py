@@ -91,7 +91,7 @@ def guess_resource_format(url, use_mimetypes=True):
         'arcgis_rest': ('arcgis/rest/services',),
     }
 
-    for resource_type, parts in resource_types.iteritems():
+    for resource_type, parts in resource_types.items():
         if any(part in url for part in parts):
             return resource_type
 
@@ -101,7 +101,7 @@ def guess_resource_format(url, use_mimetypes=True):
         'gml': ('gml',),
     }
 
-    for file_type, extensions in file_types.iteritems():
+    for file_type, extensions in file_types.items():
         if any(url.endswith(extension) for extension in extensions):
             return file_type
 
@@ -338,7 +338,7 @@ class SpatialHarvester(HarvesterBase):
                         parties[party['organisation-name']].append(party['role'])
                 else:
                     parties[party['organisation-name']] = [party['role']]
-            extras['responsible-party'] = [{'name': k, 'roles': v} for k, v in parties.iteritems()]
+            extras['responsible-party'] = [{'name': k, 'roles': v} for k, v in parties.items()]
 
         if len(iso_values['bbox']) > 0:
             bbox = iso_values['bbox'][0]
@@ -406,11 +406,11 @@ class SpatialHarvester(HarvesterBase):
         default_extras = self.source_config.get('default_extras',{})
         if default_extras:
            override_extras = self.source_config.get('override_extras',False)
-           for key,value in default_extras.iteritems():
+           for key,value in default_extras.items():
               log.debug('Processing extra %s', key)
               if not key in extras or override_extras:
                  # Look for replacement strings
-                 if isinstance(value,basestring):
+                 if isinstance(value, str):
                     value = value.format(harvest_source_id=harvest_object.job.source.id,
                              harvest_source_url=harvest_object.job.source.url.strip('/'),
                              harvest_source_title=harvest_object.job.source.title,
@@ -419,7 +419,7 @@ class SpatialHarvester(HarvesterBase):
                  extras[key] = value
 
         extras_as_dict = []
-        for key, value in extras.iteritems():
+        for key, value in extras.items():
             if isinstance(value, (list, dict)):
                 extras_as_dict.append({'key': key, 'value': json.dumps(value)})
             else:
@@ -582,7 +582,7 @@ class SpatialHarvester(HarvesterBase):
             context['ignore_auth'] = True
 
         tag_schema = logic.schema.default_tags_schema()
-        tag_schema['name'] = [not_empty, unicode]
+        tag_schema['name'] = [not_empty, str]
         self.validate_tags(package_dict)
 
         # Flag this object as the current one
@@ -596,8 +596,8 @@ class SpatialHarvester(HarvesterBase):
 
             # We need to explicitly provide a package ID, otherwise ckanext-spatial
             # won't be be able to link the extent to the package.
-            package_dict['id'] = unicode(uuid.uuid4())
-            package_schema['id'] = [unicode]
+            package_dict['id'] = str(uuid.uuid4())
+            package_schema['id'] = [str]
 
             # Save reference to the package on the object
             harvest_object.package_id = package_dict['id']

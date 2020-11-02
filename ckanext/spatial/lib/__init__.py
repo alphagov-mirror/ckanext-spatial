@@ -96,7 +96,7 @@ def validate_bbox(bbox_values):
     Any problems and it returns None.
     '''
 
-    if isinstance(bbox_values,basestring):
+    if isinstance(bbox_values, str):
         bbox_values = bbox_values.split(',')
 
     if len(bbox_values) is not 4:

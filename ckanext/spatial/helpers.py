@@ -68,4 +68,4 @@ def get_common_map_config():
         base map (ie those starting with 'ckanext.spatial.common_map.')
     '''
     namespace = 'ckanext.spatial.common_map.'
-    return dict([(k.replace(namespace, ''), v) for k, v in config.iteritems() if k.startswith(namespace)])
+    return dict([(k.replace(namespace, ''), v) for k, v in config.items() if k.startswith(namespace)])
