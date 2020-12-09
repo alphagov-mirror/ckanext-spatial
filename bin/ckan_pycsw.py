@@ -20,7 +20,6 @@ def setup_db(pycsw_config):
     from sqlalchemy import Column, Text
 
     database = pycsw_config.get('repository', 'database')
-    # table_name = pycsw_config.get('repository', 'table', 'records')
     table_name = pycsw_config.get('repository', 'table')
 
     ckan_columns = [
@@ -57,7 +56,6 @@ def set_keywords(pycsw_config_file, pycsw_config, ckan_url, limit=20):
 def load(pycsw_config, ckan_url):
 
     database = pycsw_config.get('repository', 'database')
-    # table_name = pycsw_config.get('repository', 'table', 'records')
     table_name = pycsw_config.get('repository', 'table')
 
     context = pycsw.core.config.StaticContext()
