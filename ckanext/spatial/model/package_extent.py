@@ -1,4 +1,5 @@
 from logging import getLogger
+from autologging import logged, traced
 
 from sqlalchemy import Table
 
@@ -16,6 +17,7 @@ package_extent_table = None
 
 DEFAULT_SRID = 4326 #(WGS 84)
 
+@logged
 def setup(srid=None):
 
     if package_extent_table is None:
@@ -51,6 +53,7 @@ def setup(srid=None):
         log.debug('Spatial tables creation deferred')
 
 
+@traced
 class PackageExtent(DomainObject):
     def __init__(self, package_id=None, the_geom=None):
         self.package_id = package_id

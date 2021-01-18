@@ -2,12 +2,15 @@ import sys
 import re
 from pprint import pprint
 import logging
+from autologging import traced
 
 from ckan.lib.cli import CkanCommand
 from ckan.lib.helpers import json
 from ckanext.spatial.lib import save_package_extent
 log = logging.getLogger(__name__)
 
+
+@traced
 class Spatial(CkanCommand):
     '''Performs spatially related operations.
 
@@ -94,4 +97,3 @@ class Spatial(CkanCommand):
         msg = "Done. Extents generated for %i out of %i packages" % (count,len(packages))
 
         print msg
-

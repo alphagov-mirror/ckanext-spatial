@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from autologging import traced
 
 from ckan import model
 
@@ -12,6 +13,7 @@ from ckanext.harvest.model import HarvestObjectExtra as HOExtra
 from ckanext.spatial.harvesters.base import SpatialHarvester,  guess_standard
 
 
+@traced
 class DocHarvester(SpatialHarvester, SingletonPlugin):
     '''
     A Harvester for individual spatial metadata documents
@@ -110,4 +112,3 @@ class DocHarvester(SpatialHarvester, SingletonPlugin):
     def fetch_stage(self,harvest_object):
         # The fetching was already done in the previous stage
         return True
-

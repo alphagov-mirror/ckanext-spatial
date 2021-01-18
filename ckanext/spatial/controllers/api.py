@@ -1,4 +1,5 @@
 import logging
+from autologging import traced
 
 try:
     from cStringIO import StringIO
@@ -19,6 +20,7 @@ from ckanext.spatial.lib import get_srid, validate_bbox, bbox_query
 log = logging.getLogger(__name__)
 
 
+@traced
 class ApiController(BaseApiController):
 
     def spatial_query(self):
@@ -51,6 +53,7 @@ class ApiController(BaseApiController):
         return self._finish_ok(output)
 
 
+@traced
 class HarvestMetadataApiController(BaseApiController):
 
     def _get_content(self, id):
@@ -118,7 +121,7 @@ class HarvestMetadataApiController(BaseApiController):
 
         return xslt_package, xslt_path
 
-    def display_xml_original(self, id):
+    def display_xml_original(self, id, **kwargs):
         content = self._get_original_content(id)
 
         if not content:
@@ -131,7 +134,7 @@ class HarvestMetadataApiController(BaseApiController):
             content = u'<?xml version="1.0" encoding="UTF-8"?>\n' + content
         return content.encode('utf-8')
 
-    def display_html(self, id):
+    def display_html(self, id, **kwargs):
         content = self._get_content(id)
 
         if not content:
@@ -140,7 +143,7 @@ class HarvestMetadataApiController(BaseApiController):
         xslt_package, xslt_path = self._get_xslt()
         return self._transform_to_html(content, xslt_package, xslt_path)
 
-    def display_html_original(self, id):
+    def display_html_original(self, id, **kwargs):
         content = self._get_original_content(id)
 
         if content is None:

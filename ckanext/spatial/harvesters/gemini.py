@@ -14,6 +14,8 @@ from datetime import datetime
 from numbers import Number
 import uuid
 import logging
+from autologging import traced
+
 import difflib
 import re
 
@@ -46,6 +48,7 @@ log = logging.getLogger(__name__)
 debug_exception_mode = bool(os.getenv('DEBUG'))
 
 
+@traced
 class GeminiHarvester(SpatialHarvester):
     '''Base class for spatial harvesting GEMINI2 documents for the UK Location
     Programme. May be easily adaptable for other INSPIRE and spatial projects.
@@ -570,6 +573,7 @@ class GeminiHarvester(SpatialHarvester):
 
         return gemini_string, gemini_guid
 
+@traced
 class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
     '''
     A Harvester for CSW servers
@@ -679,6 +683,7 @@ class GeminiCswHarvester(GeminiHarvester, SingletonPlugin):
         self.csw = CswService(url)
 
 
+@traced
 class GeminiDocHarvester(GeminiHarvester, SingletonPlugin):
     '''
     A Harvester for individual GEMINI documents
@@ -740,6 +745,7 @@ class GeminiDocHarvester(GeminiHarvester, SingletonPlugin):
         return True
 
 
+@traced
 class GeminiWafHarvester(GeminiHarvester, SingletonPlugin):
     '''
     A Harvester from a WAF server containing GEMINI documents.

@@ -1,4 +1,6 @@
 import logging
+from autologging import traced
+
 import hashlib
 from urlparse import urljoin
 import dateutil.parser
@@ -22,6 +24,7 @@ from ckanext.spatial.harvesters.base import SpatialHarvester, guess_standard
 log = logging.getLogger(__name__)
 
 
+@traced
 class WAFHarvester(SpatialHarvester, SingletonPlugin):
     '''
     A Harvester for WAF (Web Accessible Folders) containing spatial metadata documents.
@@ -317,4 +320,3 @@ def _extract_waf(content, base_url, scraper, results = None, depth=0):
         results.append((urljoin(base_url, record.url), date))
 
     return results
-

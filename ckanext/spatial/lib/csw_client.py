@@ -4,6 +4,7 @@ for convenience.
 """
 
 import logging
+from autologging import traced
 
 from owslib.etree import etree
 from owslib.fes import PropertyIsEqualTo, SortBy, SortProperty
@@ -13,6 +14,7 @@ log = logging.getLogger(__name__)
 class CswError(Exception):
     pass
 
+@traced
 class OwsService(object):
     def __init__(self, endpoint=None):
         if endpoint is not None:

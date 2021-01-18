@@ -3,11 +3,15 @@ Library for creating reports that can be displayed easily in an HTML table
 and then saved as a CSV.
 '''
 
+from autologging import traced
+
 import datetime
 import csv
 try: from cStringIO import StringIO
 except ImportError: from StringIO import StringIO
 
+
+@traced
 class ReportTable(object):
     def __init__(self, column_names):
         assert isinstance(column_names, (list, tuple))
@@ -66,4 +70,3 @@ class ReportTable(object):
                 raise Exception("%s: %s, %s"%(e, row, row_formatted))
         csvout.seek(0)
         return csvout.read()
-        

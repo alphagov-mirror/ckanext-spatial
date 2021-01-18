@@ -3,6 +3,7 @@ import urllib
 import urlparse
 
 import logging
+from autologging import traced
 
 from ckan import model
 
@@ -16,6 +17,7 @@ from ckanext.spatial.lib.csw_client import CswService
 from ckanext.spatial.harvesters.base import SpatialHarvester, text_traceback
 
 
+@traced
 class CSWHarvester(SpatialHarvester, SingletonPlugin):
     '''
     A Harvester for CSW servers
@@ -192,4 +194,3 @@ class CSWHarvester(SpatialHarvester, SingletonPlugin):
 
     def _setup_csw_client(self, url):
         self.csw = CswService(url)
-

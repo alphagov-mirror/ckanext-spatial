@@ -14,3 +14,5 @@ pyproj==1.9.3
 requests>=2.0
 Shapely>=1.2.13
 urllib3==1.23
+
+-e git+https://github.com/alphagov/Autologging.git@only_trace_calls#egg=AutoLogging

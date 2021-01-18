@@ -1,6 +1,7 @@
 import os
 import requests
 
+from autologging import logged, TRACE, traced
 from pkg_resources import resource_stream
 from ckanext.spatial.model import ISODocument
 
@@ -68,6 +69,7 @@ class XsdValidator(BaseValidator):
         return True, []
 
 
+@traced
 class ISO19139Schema(XsdValidator):
     name = 'iso19139'
     title = 'ISO19139 XSD Schema'
@@ -86,6 +88,7 @@ class ISO19139Schema(XsdValidator):
         return is_valid, errors
 
 
+@traced
 class ISO19139EdenSchema(XsdValidator):
     name = 'iso19139eden'
     title = 'ISO19139 XSD Schema (EDEN 2009-03-16)'
@@ -142,6 +145,7 @@ class ISO19139EdenSchema(XsdValidator):
             return 'dataset'
 
 
+@traced
 class ISO19139NGDCSchema(XsdValidator):
     '''
     XSD based validation for ISO 19139 documents.
@@ -163,6 +167,7 @@ class ISO19139NGDCSchema(XsdValidator):
         return cls._is_valid(xml, xsd_filepath, 'NGDC Schema (schema.xsd)')
 
 
+@traced
 class FGDCSchema(XsdValidator):
     '''
     XSD based validation for FGDC metadata documents.
@@ -273,6 +278,7 @@ class SchematronValidator(BaseValidator):
         return etree.XSLT(compiled)
 
 
+@traced
 class ConstraintsSchematron(SchematronValidator):
     name = 'constraints'
     title = 'ISO19139 Table A.1 Constraints Schematron (Medin 1.3)'
@@ -286,6 +292,7 @@ class ConstraintsSchematron(SchematronValidator):
             return [cls.schematron(schema)]
 
 
+@traced
 class ConstraintsSchematron14(SchematronValidator):
     name = 'constraints-1.4'
     title = 'ISO19139 Table A.1 Constraints Schematron (Medin/Parslow 1.4)'
@@ -298,6 +305,7 @@ class ConstraintsSchematron14(SchematronValidator):
             return [cls.schematron(schema)]
 
 
+@traced
 class Gemini2Schematron(SchematronValidator):
     name = 'gemini2'
     title = 'GEMINI 2.1 Schematron 1.2'
@@ -310,6 +318,7 @@ class Gemini2Schematron(SchematronValidator):
             return [cls.schematron(schema)]
 
 
+@traced
 class Gemini2Schematron13(SchematronValidator):
     name = 'gemini2-1.3'
     title = 'GEMINI 2.1 Schematron 1.3'
@@ -321,6 +330,7 @@ class Gemini2Schematron13(SchematronValidator):
             return [cls.schematron(schema)]
 
 
+@traced
 class Gemini2Schematron3(SchematronValidator):
     name = 'gemini2-3'
     title = 'GEMINI 2.3 Schematron 1.0'
@@ -404,6 +414,7 @@ if __name__ == '__main__':
     pprint(result)
 
 
+@traced
 class SchDocumentResolver(etree.Resolver):
     def resolve(self, url, id, context):
         log.debug("Resolving URL '%s'" % url)

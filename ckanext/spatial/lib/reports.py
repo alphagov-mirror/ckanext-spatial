@@ -1,4 +1,5 @@
 import logging
+from autologging import logged
 
 from lxml import etree
 
@@ -7,6 +8,8 @@ from ckanext.spatial.lib.report import ReportTable
 from ckan import model
 from ckanext.harvest.model import HarvestObject
 
+
+@logged
 def validation_report(package_id=None):
     '''
     Looks at every harvested metadata record and compares the
