@@ -191,6 +191,7 @@ class FGDCSchema(XsdValidator):
             xml, xsd_filepath, 'FGDC Schema (fgdc-std-001-1998.xsd)')
 
 
+@traced
 class SchematronValidator(BaseValidator):
     '''Base class for a validator that uses Schematron.'''
     has_init = False
@@ -353,6 +354,7 @@ all_validators = (ISO19139Schema,
                   Gemini2Schematron3)
 
 
+@traced
 class Validators(object):
     '''
     Validates XML against one or more profiles (i.e. validators).

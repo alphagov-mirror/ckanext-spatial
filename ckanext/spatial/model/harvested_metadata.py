@@ -9,7 +9,6 @@ class MappedXmlObject(object):
     elements = []
 
 
-@traced
 class MappedXmlDocument(MappedXmlObject):
     def __init__(self, xml_str=None, xml_tree=None):
         assert (xml_str or xml_tree is not None), 'Must provide some XML in one format or another'
@@ -50,7 +49,6 @@ class MappedXmlDocument(MappedXmlObject):
         pass
 
 
-@traced
 class MappedXmlElement(MappedXmlObject):
     namespaces = {}
 
@@ -435,7 +433,6 @@ class ISOUsage(ISOElement):
    ]
 
 
-@traced
 class ISOAggregationInfo(ISOElement):
 
     elements = [

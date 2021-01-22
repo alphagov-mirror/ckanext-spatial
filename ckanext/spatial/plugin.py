@@ -2,6 +2,7 @@ import os
 import re
 import mimetypes
 from logging import getLogger
+from autologging import traced
 
 from pylons import config
 
@@ -59,6 +60,8 @@ def package_error_summary(error_dict):
             summary[p.toolkit._(prettify(key))] = error[0]
     return summary
 
+
+@traced
 class SpatialMetadata(p.SingletonPlugin):
 
     p.implements(p.IPackageController, inherit=True)
@@ -150,6 +153,7 @@ class SpatialMetadata(p.SingletonPlugin):
                 'get_common_map_config' : spatial_helpers.get_common_map_config,
                 }
 
+@traced
 class SpatialQuery(p.SingletonPlugin):
 
     p.implements(p.IRoutes, inherit=True)
@@ -390,6 +394,8 @@ class SpatialQuery(p.SingletonPlugin):
             search_results['results'] = pkgs
         return search_results
 
+
+@traced
 class HarvestMetadataApi(p.SingletonPlugin):
     '''
     Harvest Metadata API
