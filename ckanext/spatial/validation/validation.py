@@ -1,3 +1,4 @@
+from io import IOBase
 import os
 import requests
 
@@ -258,13 +259,10 @@ class SchematronValidator(BaseValidator):
             "xml/schematron/iso_abstract_expand.xsl",
             "xml/schematron/iso_svrl_for_xslt1.xsl",
             ]
-        if hasattr(schema, 'read'):
-            compiled = etree.parse(schema)
-        ## keep for gemini 2.3 schematron, will need to drop this code or replace previous 2 lines
-        # if isinstance(schema, file):
-        #     parser = etree.XMLParser(load_dtd=True)
-        #     parser.resolvers.add(SchDocumentResolver())
-        #     compiled = etree.parse(schema, parser)
+        if isinstance(schema, IOBase):
+            parser = etree.XMLParser(load_dtd=True)
+            parser.resolvers.add(SchDocumentResolver())
+            compiled = etree.parse(schema, parser)
         else:
             compiled = schema
         for filename in transforms:
