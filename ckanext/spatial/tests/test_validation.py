@@ -74,22 +74,9 @@ class TestValidation(object):
         assert len(errors) > 0
         assert_in("Descriptive keywords are mandatory", errors)
 
-    def assert_passes_all_gemini2_1_validation(self, xml_filepath):
-        errs = self.get_validation_errors(
-            validation.ISO19139EdenSchema, xml_filepath
-        )
-        assert not errs, "ISO19139EdenSchema: " + errs
-        errs = self.get_validation_errors(
-            validation.ConstraintsSchematron14, xml_filepath
-        )
-        assert not errs, "ConstraintsSchematron14: " + errs
-        errs = self.get_validation_errors(
-            validation.Gemini2Schematron, xml_filepath
-        )
-        assert not errs, "Gemini2Schematron: " + errs
 
     def test_04_dataset_valid(self):
-        self.assert_passes_all_gemini2_1_validation(
+        self.assert_passes_all_gemini2_validation(
             "gemini2.1/validation/04_Dataset_Valid.xml"
         )
 
@@ -99,16 +86,16 @@ class TestValidation(object):
             "gemini2.1/validation/05_Series_Invalid_XSD_No_Such_Element.xml",
         )
 
-    # def assert_passes_all_gemini2_validation(self, xml_filepath, gemini_schematron=validation.Gemini2Schematron):
-    #     _, errs = self.get_validation_errors(validation.ISO19139EdenSchema,
-    #                                       xml_filepath)
-    #     assert not errs, 'ISO19139EdenSchema: ' + errs
-    #     _, errs = self.get_validation_errors(validation.ConstraintsSchematron14,
-    #                                       xml_filepath)
-    #     assert not errs, 'ConstraintsSchematron14: ' + errs
-    #     _, errs = self.get_validation_errors(gemini_schematron,
-    #                                       xml_filepath)
-    #     assert not errs, 'Gemini2Schematron: ' + errs
+    def assert_passes_all_gemini2_validation(self, xml_filepath, gemini_schematron=validation.Gemini2Schematron):
+        errs = self.get_validation_errors(validation.ISO19139EdenSchema,
+                                          xml_filepath)
+        assert not errs, 'ISO19139EdenSchema: ' + errs
+        errs = self.get_validation_errors(validation.ConstraintsSchematron14,
+                                          xml_filepath)
+        assert not errs, 'ConstraintsSchematron14: ' + errs
+        errs = self.get_validation_errors(gemini_schematron,
+                                          xml_filepath)
+        assert not errs, 'Gemini2Schematron: ' + errs
 
     # def test_04_dataset_valid(self):
     #     self.assert_passes_all_gemini2_validation('gemini2.1/validation/04_Dataset_Valid.xml')
@@ -143,7 +130,7 @@ class TestValidation(object):
         assert_in("Descriptive keywords are mandatory", errors)
 
     def test_08_series_valid(self):
-        self.assert_passes_all_gemini2_1_validation(
+        self.assert_passes_all_gemini2_validation(
             "gemini2.1/validation/08_Series_Valid.xml"
         )
 
@@ -182,7 +169,7 @@ class TestValidation(object):
         )
 
     def test_12_service_valid(self):
-        self.assert_passes_all_gemini2_1_validation(
+        self.assert_passes_all_gemini2_validation(
             "gemini2.1/validation/12_Service_Valid.xml"
         )
 
@@ -207,9 +194,8 @@ class TestValidation(object):
                 gemini_schematron=validation.Gemini2Schematron3)
 
     def test_15_gemini23_service_invalid(self):
-        error_list, errors = self.get_validation_errors(validation.Gemini2Schematron3,
+        errors = self.get_validation_errors(validation.Gemini2Schematron3,
                  'gemini2.3/validation/InvalidGemini2_3.xml')
-        assert len(error_list) == 7
         assert_in('MI-4b (Abstract): Abstract is too short. GEMINI 2.3', errors)
         assert_in('MI-33 (Metadata Language): Metadata language is mandatory', errors)
         assert_in('MI-41a (Conformity): There must be at least one gmd:DQ_ConformanceResult', errors)
