@@ -97,7 +97,7 @@ jobs:
       if: ${{ matrix.ckan-version == '2.9' }}
       run: |
         pip install -r pip3-requirements.txt
-        ckan initdb
+        ckan db init
         ckan harvester initdb
     - name: Install requirements
       run: |
