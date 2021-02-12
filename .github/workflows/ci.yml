@@ -67,6 +67,7 @@ jobs:
         pip install -r pip-requirements.txt
         pip install -r dev-requirements.txt
         pip install -e .
+        ckan harvester initdb
     - name: Install dependency (common)
       run: |
         apk add --no-cache \
