@@ -55,7 +55,7 @@ jobs:
         createdb --encoding=utf-8 --host=postgres --username=postgres --owner=datastore_write datastore_test
     - name: Install harvester
       run: |
-        git clone https://github.com/ckan/ckanext-harvest
+        git clone https://github.com/ckan/ckanext-harvest --branch ckan-2.9-dgu
         cd ckanext-harvest
         pip install -r pip-requirements.txt
         pip install -r dev-requirements.txt
