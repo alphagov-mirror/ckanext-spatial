@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   lint:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -53,6 +53,10 @@ jobs:
         psql --host=postgres --username=postgres --command="CREATE USER datastore_write WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
         psql --host=postgres --username=postgres --command="CREATE USER datastore_read WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
         createdb --encoding=utf-8 --host=postgres --username=postgres --owner=datastore_write datastore_test
+    - name: Install rust dependency
+        apk add --no-cache \ 
+          rust \
+          python3-pip
     - name: Install harvester
       run: |
         git clone https://github.com/alphagov/ckanext-harvest --branch ckan-2.9-dgu
