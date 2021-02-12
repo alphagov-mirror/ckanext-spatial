@@ -62,7 +62,7 @@ jobs:
     - name: Install harvester
       run: |
         psql --host=postgres --username=postgres --command="\d"
-        git clone https://github.com/alphagov/ckanext-harvest --branch ckan-2.9-dgu
+        git clone https://github.com/ckan/ckanext-harvest
         cd ckanext-harvest
         pip install -r pip-requirements.txt
         pip install -r dev-requirements.txt
