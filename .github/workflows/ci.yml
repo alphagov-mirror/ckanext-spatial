@@ -67,7 +67,6 @@ jobs:
         pip install -r pip-requirements.txt
         pip install -r dev-requirements.txt
         pip install -e .
-        ckan harvester initdb
     - name: Install dependency (common)
       run: |
         apk add --no-cache \
@@ -98,6 +97,7 @@ jobs:
       if: ${{ matrix.ckan-version == '2.9' }}
       run: |
         pip install -r pip3-requirements.txt
+        ckan harvester initdb
     - name: Install requirements
       run: |
         pip install -e .
