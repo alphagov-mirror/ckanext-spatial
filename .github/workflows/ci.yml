@@ -54,6 +54,7 @@ jobs:
         psql --host=postgres --username=postgres --command="CREATE USER datastore_read WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
         createdb --encoding=utf-8 --host=postgres --username=postgres --owner=datastore_write datastore_test
     - name: Install rust dependency
+      run: |
         apk add --no-cache \ 
           rust \
           python3-pip
